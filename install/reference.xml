@@ -9,7 +9,7 @@
 		driverClassName="org.postgresql.Driver"
 		url="jdbc:postgresql://localhost:5432/reference"
 		username="reference"
-		password="artemis"
+		password="$REFERENCE_PWD"
 		maxActive="-1"
 		minIdle="0"
 		maxIdle="10"

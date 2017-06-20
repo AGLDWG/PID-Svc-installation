@@ -4,7 +4,7 @@ sudo timedatectl set-timezone Australia/Brisbane
 
 # install the PID Svc repos
 sudo apt install -y git
-git clone https://github.com/AGLDWG/PID-Svc-installation.git pid-svc-installations
+git clone https://github.com/AGLDWG/PID-Svc-installation.git pid-svc-installation
 git clone https://github.com/AGLDWG/PID-Svc-backup.git pid-svc-backup
 
 # make the repo required for backup staging
@@ -28,11 +28,14 @@ sudo sh -c 'echo "CATALINA_HOME=\"/usr/share/tomcat7\"" >> /etc/environment'
 sudo sh -c 'echo "CATALINA_BASE=\"/var/lib/tomcat7/\"" >> /etc/environment'
 source /etc/environment
 
-#
+cd pid-svc-installation
+
+# 
 #	Tomcat
 #
 wget https://cgsrv1.arrc.csiro.au/swrepo/PidService/jenkins/trunk/pidsvc-latest.war
 
+# move the Tomcat site config files to their homes
 sudo cp install/environment.xml /etc/tomcat7/Catalina/localhost/environment.xml
 sudo cp install/governance.xml /etc/tomcat7/Catalina/localhost/governance.xml
 sudo cp install/infrastructure.xml /etc/tomcat7/Catalina/localhost/infrastructure.xml
@@ -40,6 +43,15 @@ sudo cp install/infrastructure.xml /etc/tomcat7/Catalina/localhost/maritime.xml
 sudo cp install/reference.xml /etc/tomcat7/Catalina/localhost/reference.xml
 sudo cp install/transport.xml /etc/tomcat7/Catalina/localhost/transport.xml
 
+# replace the password tokens in the Tomcat site files with real ones
+sudo sed -i "s/ENVIRONMENT_PWD/$ENVIRONMENT_PWD/g" /etc/tomcat7/Catalina/localhost/environment.xml
+sudo sed -i "s/GOVERNANCE_PWD/$GOVERNANCE_PWD/g" /etc/tomcat7/Catalina/localhost/governance.xml
+sudo sed -i "s/INFRASTRUCTURE_PWD/$INFRASTRUCTURE_PWD/g" /etc/tomcat7/Catalina/localhost/infrastructure.xml
+sudo sed -i "s/MARITIME_PWD/$MARITIME_PWD/g" /etc/tomcat7/Catalina/localhost/maritime.xml
+sudo sed -i "s/REFERENCE_PWD/$REFERENCE_PWD/g" /etc/tomcat7/Catalina/localhost/reference.xml
+sudo sed -i "s/TRANSPORT_PWD/$TRANSPORT_PWD/g" /etc/tomcat7/Catalina/localhost/transport.xml
+
+# make dirs for all the Tomcat sites
 sudo mkdir -p /usr/local/pidsvc/environment
 sudo mkdir /usr/local/pidsvc/governance
 sudo mkdir /usr/local/pidsvc/infrastructure
@@ -47,6 +59,7 @@ sudo mkdir /usr/local/pidsvc/maritime
 sudo mkdir /usr/local/pidsvc/reference
 sudo mkdir /usr/local/pidsvc/transport
 
+$ unzip the PIDSvc file from the war into each site
 sudo unzip pidsvc-latest.war -d /usr/local/pidsvc/environment/
 sudo unzip pidsvc-latest.war -d /usr/local/pidsvc/governance/
 sudo unzip pidsvc-latest.war -d /usr/local/pidsvc/infrastructure/
@@ -72,7 +85,10 @@ sudo service tomcat7 restart
 #
 sudo a2enmod proxy
 sudo a2enmod proxy_http
+sudo a2enmod proxy_html
+sudo a2enmod xml2enc
 sudo a2enmod proxy_ajp
+sudo a2enmod filter
 sudo a2enmod headers
 sudo a2enmod rewrite
 
@@ -181,7 +197,5 @@ exit
 #
 #	PID Svc home page
 #
-cp index /var/www/html/
-
-
+sudo cp index.html /var/www/html/
 

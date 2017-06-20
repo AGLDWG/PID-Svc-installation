@@ -9,7 +9,7 @@
 		driverClassName="org.postgresql.Driver"
 		url="jdbc:postgresql://localhost:5432/governance"
 		username="governance"
-		password="colossus"
+		password="$GOVERNANCE_PWD"
 		maxActive="-1"
 		minIdle="0"
 		maxIdle="10"
