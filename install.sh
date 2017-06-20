@@ -1,16 +1,25 @@
-# include all the passwords
-source passwords.txt
+# update machine, set time
+sudo apt update
+sudo timedatectl set-timezone Australia/Brisbane
 
-export TZ=Australia/Brisbane
-sudo apt-get install -y aptitude
-sudo aptitude update
+# install the PID Svc repos
+sudo apt install -y git
+git clone https://github.com/AGLDWG/PID-Svc-installation.git pid-svc-installations
+git clone https://github.com/AGLDWG/PID-Svc-backup.git pid-svc-backup
 
-# install programs
-sudo aptitude install -y tomcat7
-sudo aptitude install -y apache2
-sudo aptitude install -y postgres
-sudo aptitude install -y postgresql-contrib
-sudo aptitude install -y unzip
+# make the repo required for backup staging
+mkdir backup
+cd backup
+git init
+cd ..
+
+# install things
+sudo apt install -y tomcat7
+sudo apt install -y tomcat7-admin
+sudo apt install -y apache2
+sudo apt install -y postgresql
+sudo apt install -y postgresql-contrib
+sudo apt install -y unzip
 
 # environment variables
 sudo sh -c 'echo "JAVA_HOME=\"/usr/lib/jvm/default-java\"" >> /etc/environment'
@@ -19,7 +28,7 @@ sudo sh -c 'echo "CATALINA_HOME=\"/usr/share/tomcat7\"" >> /etc/environment'
 sudo sh -c 'echo "CATALINA_BASE=\"/var/lib/tomcat7/\"" >> /etc/environment'
 source /etc/environment
 
-# 
+#
 #	Tomcat
 #
 wget https://cgsrv1.arrc.csiro.au/swrepo/PidService/jenkins/trunk/pidsvc-latest.war
@@ -46,11 +55,17 @@ sudo unzip pidsvc-latest.war -d /usr/local/pidsvc/reference/
 sudo unzip pidsvc-latest.war -d /usr/local/pidsvc/transport/
 
 # postgres Java driver
-wget https://jdbc.postgresql.org/download/postgresql-42.0.0.jar
-sudo cp postgresql-42.0.0.jar $CATALINA_HOME/lib/
+wget https://jdbc.postgresql.org/download/postgresql-42.1.1.jar
+sudo cp postgresql-42.1.1.jar $CATALINA_HOME/lib/
+
+# Tomcat admin
+sudo nano /var/lib/tomcat7/conf/tomcat-users.xml
+''' Add:
+<role rolename="manager-gui"/>
+<user username="pidsvcadmin" password="xxx" roles="manager-gui"/>
+'''
 
 sudo service tomcat7 restart
-
 
 #
 #	Apache
@@ -81,8 +96,7 @@ sudo mkdir /var/log/apache2/transport.data.gov.au
 sudo touch /var/log/apache2/transport.data.gov.au/access.log
 sudo touch /var/log/apache2/transport.data.gov.au/error.log
 
-sudo rm /etc/apache2/sites-available/000-default.conf
-sudo a2dissite 000-default.conf
+# remove the unused site definition
 sudo rm /etc/apache2/sites-available/default-ssl.conf
 
 sudo cp install/environment.data.gov.au.conf /etc/apache2/sites-available/environment.data.gov.au.conf
@@ -107,7 +121,6 @@ sudo a2ensite reference.data.gov.au.conf
 sudo a2ensite transport.data.gov.au.conf
 
 sudo service apache2 restart
-
 
 #
 #	Postgres
@@ -164,6 +177,11 @@ psql -d transport -f postgresql.sql
 
 # become ubuntu user
 exit
+
+#
+#	PID Svc home page
+#
+cp index /var/www/html/
 
 
 
