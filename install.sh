@@ -1,5 +1,6 @@
 # update machine, set time
 sudo apt update
+sudo apt -y upgrade
 sudo timedatectl set-timezone Australia/Brisbane
 
 # install the PID Svc repos
