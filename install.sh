@@ -37,29 +37,26 @@ cd pid-svc-installation
 wget https://cgsrv1.arrc.csiro.au/swrepo/PidService/jenkins/trunk/pidsvc-latest.war
 
 # move the Tomcat site config files to its home
-sudo cp install/linked.xml /etc/tomcat7/Catalina/localhost/linked.xml
+sudo cp linked.xml /etc/tomcat8/Catalina/localhost/linked.xml
 
 # replace the password tokens in the Tomcat site files with real ones
-sudo sed -i "s/LINKED_PWD/$LINKED_PWD/g" /etc/tomcat7/Catalina/localhost/linked.xml
+sudo sed -i "s/LINKED_PWD/$LINKED_PWD/g" /etc/tomcat8/Catalina/localhost/linked.xml
 
-# make dir for the Tomcat sites
-sudo mkdir -p /usr/local/pidsvc/linked
-
-$ unzip the PIDSvc file from the war into the site dir
-sudo unzip pidsvc-latest.war -d /usr/local/pidsvc/linked/
+$ unzip the PIDSvc file from the war into the webpadd dir
+sudo unzip pidsvc-latest.war -d /var/lib/tomcat8/webapps/linked
 
 # postgres Java driver
 wget https://jdbc.postgresql.org/download/postgresql-42.1.1.jar
 sudo cp postgresql-42.1.1.jar $CATALINA_HOME/lib/
 
 # Tomcat admin
-sudo nano /var/lib/tomcat7/conf/tomcat-users.xml
+sudo nano /var/lib/tomcat8/conf/tomcat-users.xml
 ''' Add:
 <role rolename="manager-gui"/>
-<user username="pidsvcadmin" password="xxx" roles="manager-gui"/>
+<user username="linked" password="xxx" roles="manager-gui"/>
 '''
 
-sudo service tomcat7 restart
+sudo service tomcat8 restart
 
 #
 #	Apache
@@ -80,6 +77,7 @@ sudo touch /var/log/apache2/linked.data.gov.au/error.log
 
 # remove the unused site definition
 sudo rm /etc/apache2/sites-available/default-ssl.conf
+sudo rm /etc/apache2/sites-available/000-default.conf
 
 sudo cp linked.data.gov.au.conf /etc/apache2/sites-available/linked.data.gov.au.conf
 
@@ -93,17 +91,11 @@ sudo service apache2 restart
 #	Postgres
 #
 # set postgres auth type
-sudo sed -i 's/local   all             all                                     peer/local   all             all                                     md5/g' /etc/postgresql/9.5/main/pg_hba.conf
+sudo sed -i 's/local   all             all                                     peer/local   all             all                                     md5/g' /etc/postgresql/10/main/pg_hba.conf
 sudo service postgresql restart
-
-# prepare the change ownership script
-sudo mkdir /home/postgres
-sudo cp passwords.txt /home/postgres
-sudo chown -R postgres /home/postgres
 
 # become postgres user
 sudo su - postgres
-source /home/postgres/passwords.txt
 
 #
 #	create DBs
