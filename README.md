@@ -1,3 +1,5 @@
+*This repository is now deprecated, please see <https://github.com/AGLDWG/pid-proxy>*
+
 # PID Svc installation
 This repository contains the installation scripts for the AGLDWG PID Service that manages the PIDs created using the subdomains {environment, governance, infrastructure, maritime, reference, transport}.data.gov.au.
 
